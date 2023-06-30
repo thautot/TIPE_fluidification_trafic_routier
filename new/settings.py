@@ -3,16 +3,16 @@ import pyautogui
 
 pygame.init()
 
-# paramêtres qui peuvent être changer
-DISTANCE = 1500  # distance en mêtre que vaudrait la portion de route (donc largeur fenêtre)
+# paramêtres qui peuvent être changés
+DISTANCE = 1500  # distance en mètre que vaudrait la portion de route (donc largeur fenêtre)
 V0 = 90 / 3.6  # vitesse initiale
 VCRIT = 70 / 3.6   # vitesse de congestionnement
 
-# booléen pour uné génération de voie par défaut (évite de rentrer les restrictions)
+# booléen pour une génération de voie par défaut (évite de rentrer les restrictions)
 DEFAULT = False
 
 # données pour IDM
-T = 1.5  # s: temps minimal pour faire une manoeuvre d'urgence
+T = 1.5  # s: temps minimal pour faire une manœuvre d'urgence
 S0 = 0.1  # m: distance minimale entre 2 véhicules
 A = 0.8  # m/s**2: accélération maximale
 D = 4.0  # /: coefficient d'accélération
@@ -35,7 +35,7 @@ WIDTH, HEIGHT = pyautogui.size()[0], 400
 FPS = 30
 
 ROAD_BEG = [(0, V0, 2)]     # défini les conditions initiales de la route
-ALPHA = DISTANCE / WIDTH    # distance_mêtre = ALPHA * distance_pixel
+ALPHA = DISTANCE / WIDTH    # distance_mètre = ALPHA * distance_pixel
 SIZE_ROAD = int(5 / ALPHA)  # largeur de la route en pixels
 CAR_DIM = (5 / ALPHA, SIZE_ROAD + 1)  # dimensions d'une voiture ramenées en pixels
 
@@ -73,14 +73,14 @@ def load():
     Returns
     -------
     time : list
-        contient les numéros d'image où apparaît chaque voiture
+        contient les numéros d'images où apparaît chaque voiture
     speed: list
         contient la vitesse initiale de chaque voiture
     -road: list
         contient la voie sur laquelle la voiture apparaît
     """
 
-    # certaines voitures étaient présente avant le début on doit les enlever
+    # certaines voitures étaient présentes avant le début on doit les enlever
     crop = 6
     with open("assets/apparition.csv", "r") as f:
         # temps d'apparition des voitures

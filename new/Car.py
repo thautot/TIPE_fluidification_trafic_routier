@@ -21,18 +21,40 @@ class Car(pygame.sprite.Sprite):
     v0 : float
         la vitesse désirée sur la portion de route
     simu : class
-        la simulation qui fait appelle à "Car"
+        la simulation qui fait appel à "Car"
     group :pygame.sprite.Group
-        groupe auquelle la voiture appartient
-    x : float
-        abscisse à l'apparition
+        groupe auquel la voiture appartient
+    x : list
+        ensemble des positions en abscisse
+    time : list
+        ensemble des temps de prélévement des positions
+    acceleration : float
+        accélération du véhicule
+    P : float
+        facteur de politesse
+    pos : list
+        position [x,y]
+    rect : pygame.Rect
+        dimension du véhicule
+    cooldown_change_line : float
+        temps entre chaque changement de ligne
+    cooldown_time : float
+        temps du dernier changement de voie
+    display_surface : pygame.display
+        fenêtre d'affichage
+    leader : Car
+        meneur actuel de la voiture
+    old_leader : Car
+        ancien meneur de la voiture
+    s : float
+        distance entre la voiture et son meneur
 
     Methods
     -------
     apply_restrictions():
         Appliquer les restrictions indiquées au début de la simulation.
     get_other_cars(new_road):
-        Retourne les voitures intéressantes pour un changement de voie.
+        Retourne les différentes voitures misent en jeu.
     get_all_acceleration(new_road, s, l, ps, pl, LvR):
         Retourne les accélérations des différents véhicules mis en jeu.
     test(new_road, s, l, LvR):
@@ -66,7 +88,7 @@ class Car(pygame.sprite.Sprite):
         simu : class
             la simulation qui fait appelle à "Car"
         group :pygame.sprite.Group
-            groupe auquelle la voiture appartient
+            groupe auquel la voiture appartient
         x : float
             abscisse à l'apparition
         """
@@ -76,12 +98,12 @@ class Car(pygame.sprite.Sprite):
         self.name = name
         self.velocity = velocity_init
         self.v0 = v0
-        self.acceleration = 0  # la voiture n'est pas censé manoeuvré à l'initialisation
+        self.acceleration = 0  # la voiture n'est pas censée manoeuvrer à l'initialisation
         self.road = road        # il peut aller de 0 à 2
         self.voies = 3
-        self.P = rd.normalvariate(MOYP, SIGMA)  # facteur de positesse
+        self.P = rd.normalvariate(MOYP, SIGMA)  # facteur de politesse
 
-        self.pos = [x, Y_ROAD[road] * ALPHA] # position en mêtre
+        self.pos = [x, Y_ROAD[road] * ALPHA] # position en mètre
         self.rect = pygame.Rect(- CAR_DIM[0] / 2, 0, *CAR_DIM)
         self.rect.center = [x/ALPHA, Y_ROAD[road]]         # position en pixel
 
@@ -91,7 +113,7 @@ class Car(pygame.sprite.Sprite):
 
         self.simu = simu # utilisé pour enlever la voiture et avoir dt
 
-        self.cooldown_change_line = 2e3 # temps entre chaque changements de voie
+        self.cooldown_change_line = 2e3 # temps entre chaque changement de voie
         self.cooldown_time = pygame.time.get_ticks()
 
         # différentes fonctions
@@ -122,7 +144,7 @@ class Car(pygame.sprite.Sprite):
 
     def get_other_cars(self, new_road):
         """
-        Retourne les voitures intéressantes pour un changement de voie.
+        Retourne les différentes voitures misent en jeu.
 
         Parameters
         ----------
@@ -132,9 +154,9 @@ class Car(pygame.sprite.Sprite):
         Returns
         -------
         ps: Car
-            voiture potentiel qui nous suivrait sur cette nouvelle voie
+            voiture potentielle qui nous suivrait sur cette nouvelle voie
         pl: Car
-            voiture potentiel qu'on suivrait sur cette nouvelle voie
+            voiture potentielle qu'on suivrait sur cette nouvelle voie
         """
 
         cars_sort = self.simu.cars_sort
@@ -169,18 +191,18 @@ class Car(pygame.sprite.Sprite):
         l : Car
             l'actuel meneur
         ps: Car
-            voiture potentiel qui nous suivrait sur cette nouvelle voie
+            voiture potentielle qui nous suivrait sur cette nouvelle voie
         pl: Car
-            voiture potentiel qu'on suivrait sur cette nouvelle voie
+            voiture potentielle qu'on suivrait sur cette nouvelle voie
         LvR : bool
-            si on veut aller de la gauche vers la droite ou non
+            si la voiture veut aller de la gauche vers la droite ou non
 
         Returns
         -------
         tca : float
-            accélération de la voiture si elle changeait de voie
+            accélération de la voiture si elle change de voie
         ca : float
-            accélération de la voiture si elle ne changeait pas de voie
+            accélération de la voiture si elle ne change pas de voie
         tpsa : float
             accélération du potentiel suiveur si la voiture change de voie
         psa : float
@@ -190,9 +212,9 @@ class Car(pygame.sprite.Sprite):
         sa :
             accélération de l'actuel suiveur si la voiture ne change pas de voie
         tceura : float
-            accélération de la voiture si elle changeait de voie modifié
+            accélération de la voiture si elle change de voie modifiée
         ceura : float
-            accélération de la voiture si elle ne changeait pas de voie modifié
+            accélération de la voiture si elle ne changeait pas de voie modifiée
         """
 
         ca = self.get_acceleration(self, l)
@@ -261,12 +283,12 @@ class Car(pygame.sprite.Sprite):
         l : Car
             l'actuel meneur
         LvR : bool
-            si on veut aller de la gauche vers la droite ou non
+            si la voiture veut aller de la gauche vers la droite ou non
 
         Returns
         -------
         change : bool
-            si il y a un changement de voie ou non
+            s'il y a un changement de voie ou non
         """
 
         ps, pl = self.get_other_cars(new_road)
@@ -394,7 +416,7 @@ class Car(pygame.sprite.Sprite):
             setoile = S0
         else:
             deltav = car.velocity - leader.velocity
-            car.s = leader.pos[0] - car.pos[0] - CAR_DIM[0] * ALPHA  # on remet en mêtre
+            car.s = leader.pos[0] - car.pos[0] - CAR_DIM[0] * ALPHA  # on remet en mètre
             setoile = S0 + max(0, car.velocity * (T + deltav * INVERTED2SQRTAB))
 
         return max(MB, A * (1 - (car.velocity / car.v0) ** D - (setoile / car.s) ** 2))

@@ -14,7 +14,7 @@ for obj in bpy.context.scene.objects:
         bpy.context.view_layer.objects.active = obj
         num = int(obj.name[-3:])
         if num %10 == 0 :
-            print(num)  # pour savoir l'avancement du programme
+            print(num)  # pour connaître l'avancement du programme
         T = []
         for frame in range(1, 3712):
             bpy.context.scene.frame_current = frame

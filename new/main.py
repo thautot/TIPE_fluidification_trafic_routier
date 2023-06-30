@@ -13,13 +13,55 @@ class Simulation:
 
     Attributes
     ----------
-    None
+    screen : pygame.display
+        fenêtre d'affichage
+    clock : pygame.time.Clock
+        horloge de la simulation
+    frame : int
+        nombre d'actualisation de la page
+    dt : float
+        temps entre chaque actualisation de la fenêtre de visualisation
+    apparition : list
+        ensemble  des données d'apparition des voitures
+    rest : bool
+        correspond à l'application de restrictions ou non
+    list_x : list
+        ensemble des listes de position des voitures (cf documentation Car)
+    list_t : list
+        ensemble des listes en temps des voitures (cf doccumentation Car)
+    changeline : list
+        ensemble des instants où il y a un changement de voie
+    cars : pygame.sprite.Group
+        groupe des voitures et fin de voie
+    cars_sort : list
+        ensemble des voitures et fin de voie triées selon leur abscisse
+    road : list
+        permet de décrire les portions de routes en fonction des restrictions
+    end_line :
+        ensemble des descriptions de fin de voie
 
     Methods
     -------
     initialise():
         Créée tous les attributs à chaque début de simulation.
-
+    end_line():
+        Créée une voiture morte au bout d'une fin de voie
+    spawn():
+        Fait apparaître les voitures en fonction du jeu de données.
+    get_leader(car):
+        On donne à la voiture qui vient d'être créée un meneur.
+    remove(car):
+        Enlève une voiture de la simulation.
+    change_line():
+        Enregistre un changement de voie.
+    show_graph():
+        Affiche la courbe en position des voitures ainsi que les changements de voies.
+    draw():
+        Affiche l'environnement, un repère ainsi que les voitures dans la fenêtre.
+    update():
+        Actualise à chaque image les voitures.
+    run():
+        Boucle permettant l'affichage et l'acquisition des différents événements.
     """
 
     def  __init__(self):
@@ -60,12 +102,12 @@ class Simulation:
         # lié au temps
         self.clock = pygame.time.Clock()
         self.frame = 0
-        # pour le graph
+        # pour le graphe
         self.list_x = []
         self.list_t = []
         self.changeline = []
 
-        # groupes de cars
+        # groupe de cars
         self.cars = pygame.sprite.Group()  # groupe des voitures
         self.cars_sort = []
         if self.rest:
@@ -125,7 +167,17 @@ class Simulation:
 
     def spawn(self):
         """
+        Fait apparaître les voitures en fonction du jeu de données.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
         """
+
         # on regarde si on doit faire apparaitre une voiture
         if not self.frame in self.apparition["time"]:
             return None
@@ -177,9 +229,9 @@ class Simulation:
         self.list_x.append([car.x[i] for i in range(len(car.x)) if i % 5 == 0])
         self.list_t.append((car.name, [car.time[i] for i in range(len(car.time)) if i % 5 == 0]))
 
-        # on le supprime de l'ensemble des voitures
+        # on la supprime de l'ensemble des voitures
         self.cars.remove(car)
-        # on le supprime dans la liste des voitures classées
+        # on la supprime dans la liste des voitures classées
         del self.cars_sort[self.cars_sort.index(car)]
 
         # on l'enlève comme meneur pour la voiture qui l'avait
@@ -275,7 +327,7 @@ class Simulation:
 
     def run(self):
         """
-        Boucle permettant l'affichage et l'acquisition des différents événements
+        Boucle permettant l'affichage et l'acquisition des différents événements.
 
         Parameters
         ----------
@@ -297,7 +349,7 @@ class Simulation:
                     pygame.quit()
                 elif pygame.key.get_pressed()[pygame.K_SPACE]:
                     print(SLICE)
-                    print("/!\ les résultats suivants ceux-ci seront inutilisables,")
+                    print("/!\ les résultats suivant ceux-ci seront inutilisables,")
                     print("il est conseillé de relancer la simulation (appuyer sur 'r')")
                     self.show_graph()
                 elif pygame.key.get_pressed()[pygame.K_r]:
@@ -311,7 +363,7 @@ class Simulation:
             self.cars_sort.sort(key=lambda x: x.pos[0]) # on trie la liste
             self.draw()
             self.update()
-            pygame.display.update()  # rafraichissement de la page
+            pygame.display.update()  # rafraîchissement de la page
             self.dt = self.clock.tick(FPS) * 1e-3  # temps entre chaque actualisation en seconde
             self.frame +=1
 
